@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Leave a Review</title>
+  <link href="https://fonts.googleapis.com/css2?family=Aleo&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Aleo', serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #333;
+      color: white;
+      display: flex;
+      justify-content: center;
+    }
+    .review-container {
+      max-width: 400px;
+      width: 100%;
+      border-radius: 10px;
+      background-color: #444;
+      padding: 15px;
+    }
+    h3 {
+      margin-top: 0;
+    }
+    .stars {
+      display: flex;
+      font-size: 30px;
+      cursor: pointer;
+      color: #ccc;
+      flex-direction: row-reverse;
+      justify-content: flex-end;
+      padding: 0 10px;
+    }
+    .stars span:hover,
+    .stars span:hover ~ span,
+    .stars span.selected,
+    .stars span.selected ~ span {
+      color: gold;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+      margin: 10px 0;
+      padding: 5px;
+      font-size: 14px;
+      border-radius: 5px;
+      border: none;
+      resize: vertical;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #4285F4;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #thankyou {
+      display: none;
+      color: lightgreen;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="review-container">
+    <h3>Leave a Review</h3>
+    <div class="stars" id="stars">
+      <span data-value="5">&#9733;</span>
+      <span data-value="4">&#9733;</span>
+      <span data-value="3">&#9733;</span>
+      <span data-value="2">&#9733;</span>
+      <span data-value="1">&#9733;</span>
+    </div>
+    <textarea placeholder="Write your review here..."></textarea>
+    <button id="submitBtn">Submit</button>
+    <p id="thankyou">Thanks for your review!</p>
+  </div>
+
+  <script>
+    let rating = 0;
+    const stars = document.querySelectorAll('#stars span');
+    stars.forEach(star => {
+      star.addEventListener('click', function () {
+        rating = this.dataset.value;
+        stars.forEach(s => s.classList.remove('selected'));
+        this.classList.add('selected');
+        let next = this.nextElementSibling;
+        while (next) {
+          next.classList.add('selected');
+          next = next.nextElementSibling;
+        }
+      });
+    });
+
+    document.getElementById('submitBtn').addEventListener('click', () => {
+      const text = document.querySelector('textarea').value.trim();
+      if (!rating || !text) {
+        alert('Please select a star rating and write a review.');
+        return;
+      }
+      fetch('https://script.google.com/macros/s/AKfycbxrGjKDo4kw2_0yKreMobOLTP-gHnkLwgfyol4SG-rLnNAvaIhHC9JaGdZNu566lIQz/exec', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ rating: rating, review: text })
+      })
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('thankyou').style.display = 'block';
+          document.querySelector('textarea').value = '';
+          stars.forEach(s => s.classList.remove('selected'));
+          rating = 0;
+        })
+        .catch(error => {
+          alert('Error submitting review. Please try again later.');
+          console.error('Error:', error);
+        });
+    });
+  </script>
+</body>
+</html>
